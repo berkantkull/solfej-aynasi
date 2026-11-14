@@ -1,5 +1,7 @@
 # Solfej Aynası
 
+**Hemen dene: https://berkantkull.github.io/solfej-aynasi/**
+
 Konservatuvara hazırlanan öğrenciler için tarayıcıda çalışan bir solfej çalışma aracı. Notayı söylersin, sesin hedef notanın üstüne canlı bir çizgi olarak çizilir; sonunda nota nota geri bildirim ve 100 üzerinden puan alırsın.
 
 ## Özellikler
@@ -15,12 +17,10 @@ Konservatuvara hazırlanan öğrenciler için tarayıcıda çalışan bir solfej
 
 Tek bir HTML dosyasıdır; sunucu, kurulum ya da dış kütüphane gerektirmez. Ses yüksekliği tarayıcıda YIN algoritmasıyla hesaplanır, ses hiçbir yere gönderilmez.
 
-## Çalıştırma
+## Kullanım
 
-Mikrofon erişimi için sayfa `localhost` ya da `https` üzerinden açılmalıdır:
+1. **https://berkantkull.github.io/solfej-aynasi/** adresini aç (bilgisayarda ya da telefonda, kurulum gerekmez).
+2. **Mikrofonu aç**'a bas, izin ver ve listeden mikrofonunu seç.
+3. **Dinle** ile ezgiyi duy, **Söyle** ile söyle.
 
-```bash
-python -m http.server 8765
-```
-
-Ardından tarayıcıda `http://localhost:8765` adresini aç.
+Kulaklık takarsan metronom sesi mikrofona karışmaz.
