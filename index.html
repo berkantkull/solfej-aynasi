@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solfej Aynası</title>
+<style>
+  :root {
+    --bg: #f5f3ee; --panel: #ffffff; --ink: #1d1b18; --muted: #6b665d; --line: #dcd6ca;
+    --accent: #3b5bdb; --accent-ink: #ffffff; --good: #2f9e44; --warn: #d9950b; --bad: #e03131;
+    --target: #d3dbf7; --target-edge: #8ea0e6; --grid: #ece8df; --shadow: 0 1px 2px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141418; --panel: #1f1f26; --ink: #ecebe8; --muted: #a19d95; --line: #3a3a45;
+      --accent: #7c94ff; --accent-ink: #0f1020; --good: #51cf66; --warn: #fcc419; --bad: #ff6b6b;
+      --target: #2b3358; --target-edge: #5568b8; --grid: #26262f; --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141418; --panel: #1f1f26; --ink: #ecebe8; --muted: #a19d95; --line: #3a3a45;
+    --accent: #7c94ff; --accent-ink: #0f1020; --good: #51cf66; --warn: #fcc419; --bad: #ff6b6b;
+    --target: #2b3358; --target-edge: #5568b8; --grid: #26262f; --shadow: none;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .page { max-width: 1040px; margin: 0 auto; padding: 20px 16px 48px; }
+  header h1 { margin: 0; font-size: 26px; letter-spacing: -.01em; }
+  header p { margin: 4px 0 0; color: var(--muted); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); margin-top: 16px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: end; }
+  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field > span { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  select, button { font: inherit; color: inherit; }
+  select { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; max-width: 100%; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .check { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
+  input[type=range] { width: 140px; accent-color: var(--accent); }
+  button { border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 8px 14px; cursor: pointer; font-weight: 600; }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+  #status { margin-left: auto; font-weight: 700; font-size: 16px; min-height: 24px; }
+  #status.go { color: var(--accent); }
+  .scoreWrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  #staff { display: block; }
+  #roll { display: block; border-top: 1px solid var(--line); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1.6fr; gap: 16px; }
+  @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+  .grid2 .card { margin-top: 0; }
+  .tunerNote { font-size: 44px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .tunerSub { color: var(--muted); font-variant-numeric: tabular-nums; min-height: 22px; }
+  .meter { position: relative; height: 14px; border-radius: 7px; background: linear-gradient(90deg, var(--bad) 0%, var(--warn) 25%, var(--good) 42%, var(--good) 58%, var(--warn) 75%, var(--bad) 100%); opacity: .85; margin: 12px 0 4px; }
+  .needle { position: absolute; top: -5px; width: 4px; height: 24px; margin-left: -2px; border-radius: 2px; background: var(--ink); left: 50%; transition: left .08s linear; }
+  .meterLabels { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+  .level { height: 6px; border-radius: 3px; background: var(--grid); overflow: hidden; margin-top: 12px; }
+  .level > div { height: 100%; width: 0; background: var(--accent); transition: width .05s linear; }
+  h2 { font-size: 15px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .scoreBig { font-size: 40px; font-weight: 800; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip { border-radius: 8px; padding: 4px 8px; font-size: 13px; border: 1px solid var(--line); }
+  .chip b { font-weight: 700; }
+  .chip.good { border-color: var(--good); color: var(--good); }
+  .chip.close { border-color: var(--warn); color: var(--warn); }
+  .chip.bad, .chip.miss { border-color: var(--bad); color: var(--bad); }
+  .muted { color: var(--muted); }
+  .help { margin: 0; padding-left: 18px; color: var(--muted); }
+  .help li { margin: 2px 0; }
+  .err { color: var(--bad); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>Solfej Aynası</h1>
+    <p>Notayı söyle, sesinin hedef notaya ne kadar yakın olduğunu anında gör.</p>
+  </header>
+
+  <section class="card controls" aria-label="Ayarlar">
+    <label class="field"><span>Alıştırma</span>
+      <div class="row">
+        <select id="exSelect"></select>
+        <button id="randomBtn" type="button">Rastgele üret</button>
+      </div>
+    </label>
+    <label class="field"><span>Tempo: <b id="tempoVal">60</b> BPM</span>
+      <input id="tempo" type="range" min="40" max="120" step="2" value="60">
+    </label>
+    <label class="field"><span>Sesin</span>
+      <select id="voice">
+        <option value="high">İnce ses (kadın / çocuk)</option>
+        <option value="low">Kalın ses (erkek)</option>
+      </select>
+    </label>
+    <label class="field"><span>Mikrofon</span>
+      <select id="micSelect" disabled><option>Önce mikrofonu aç</option></select>
+    </label>
+    <div class="field"><span>Seçenekler</span>
+      <div class="row">
+        <label class="check"><input id="metro" type="checkbox" checked> Metronom</label>
+        <label class="check"><input id="fold" type="checkbox" checked> Oktav farkını yok say</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-label="Nota ve ses grafiği">
+    <div class="actions">
+      <button id="micBtn" type="button">🎤 Mikrofonu aç</button>
+      <button id="listenBtn" type="button">▶ Dinle</button>
+      <button id="singBtn" type="button" class="primary">● Söyle</button>
+      <button id="stopBtn" type="button" disabled>■ Durdur</button>
+      <div id="status" aria-live="polite"></div>
+    </div>
+    <div class="scoreWrap" id="scoreWrap">
+      <div id="scoreInner">
+        <svg id="staff" height="150" role="img" aria-label="Nota dizeği"></svg>
+        <canvas id="roll" aria-label="Ses yüksekliği grafiği"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid2" style="margin-top:16px">
+    <section class="card" aria-label="Akort göstergesi">
+      <h2>Şu an söylediğin</h2>
+      <div class="tunerNote" id="tNote">—</div>
+      <div class="tunerSub" id="tSub">Mikrofonu açınca burada görünecek</div>
+      <div class="meter"><div class="needle" id="needle"></div></div>
+      <div class="meterLabels"><span>pes</span><span>tam</span><span>tiz</span></div>
+      <div class="level"><div id="level"></div></div>
+    </section>
+    <section class="card" aria-label="Sonuç">
+      <h2>Sonuç</h2>
+      <div id="resultBox">
+        <ol class="help">
+          <li><b>Mikrofonu aç</b> ve izin ver.</li>
+          <li><b>Dinle</b> ile ezgiyi bir kez duy.</li>
+          <li><b>Söyle</b>'ye bas: önce başlangıç sesi, sonra 4 vuruş sayım gelir, ardından notaları söyle.</li>
+          <li>Kulaklık takarsan metronom sesi mikrofona karışmaz.</li>
+        </ol>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+// ---------- Müzik verisi ----------
+const PC_NAME = ['Do','Do♯','Re','Re♯','Mi','Fa','Fa♯','Sol','Sol♯','La','La♯','Si'];
+const LETTERS = 'CDEFGAB';
+const LETTER_SEMI = [0,2,4,5,7,9,11];
+const SEMI_TO_LETTER = {0:0,2:1,4:2,5:3,7:4,9:5,11:6};
+
+const PRESETS = [
+  { name: "1 · Do'dan Sol'e yürüyüş", notes: 'C4:1 D4:1 E4:1 F4:1 G4:4' },
+  { name: '2 · Do–Mi–Sol arpeji',     notes: 'C4:1 E4:1 G4:2 G4:1 E4:1 C4:2' },
+  { name: '3 · Üçlü atlamalar',        notes: 'C4:1 E4:1 D4:1 F4:1 E4:1 G4:1 F4:1 A4:1 G4:4' },
+  { name: '4 · Basit ezgi',            notes: 'C4:1 E4:1 G4:1 E4:1 F4:1 A4:1 G4:2 E4:1 G4:1 F4:1 D4:1 C4:4' },
+  { name: "5 · Sol'den inici",          notes: 'G4:2 E4:2 F4:1 D4:1 E4:1 C4:1 D4:2 B3:2 C4:4' },
+  { name: '6 · Do majör dizi',         notes: 'C4:1 D4:1 E4:1 F4:1 G4:1 A4:1 B4:1 C5:1 C5:1 B4:1 A4:1 G4:1 F4:1 E4:1 D4:1 C4:1' },
+];
+
+const midiName = m => PC_NAME[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1);
+const syllable = m => PC_NAME[((m % 12) + 12) % 12];
+const midiToFreq = m => 440 * Math.pow(2, (m - 69) / 12);
+const freqToMidi = f => 69 + 12 * Math.log2(f / 440);
+const foldNear = (x, ref) => x - 12 * Math.round((x - ref) / 12);
+
+function parseExercise(str) {
+  let start = 0;
+  return str.trim().split(/\s+/).map(tok => {
+    const [p, d] = tok.split(':');
+    const letter = LETTERS.indexOf(p[0]);
+    const oct = parseInt(p.slice(1), 10);
+    const n = { midi: 12 * (oct + 1) + LETTER_SEMI[letter], dur: Number(d), start, letter, oct };
+    start += n.dur;
+    return n;
+  });
+}
+
+function randomExercise() {
+  const scale = [60, 62, 64, 65, 67, 69, 71, 72, 74];
+  const rnd = a => a[Math.floor(Math.random() * a.length)];
+  const bars = rnd([2, 3, 4]);
+  const patterns = [[1,1,1,1],[2,1,1],[1,1,2],[2,2],[1,2,1],[3,1],[1,1,1,1]];
+  let idx = rnd([0, 2, 4]);
+  const out = [];
+  for (let b = 0; b < bars; b++) {
+    const last = b === bars - 1;
+    const pat = last ? rnd([[2,2],[1,1,2],[1,3]]) : rnd(patterns);
+    pat.forEach((dur, k) => {
+      const isFinal = last && k === pat.length - 1;
+      const isPen = last && k === pat.length - 2;
+      if (out.length === 0) { /* başlangıç notası */ }
+      else if (isFinal) idx = idx >= 5 ? 7 : 0;
+      else if (isPen) idx = idx >= 4 ? rnd([6, 8]) : 1;
+      else {
+        idx += rnd([-1, -1, -1, 1, 1, 1, -2, 2, 0]);
+        idx = Math.max(0, Math.min(scale.length - 1, idx));
+      }
+      out.push(`${midiToLetterName(scale[idx])}:${dur}`);
+    });
+  }
+  return out.join(' ');
+}
+function midiToLetterName(m) {
+  return LETTERS[SEMI_TO_LETTER[m % 12]] + (Math.floor(m / 12) - 1);
+}
+
+// ---------- Durum ----------
+const $ = s => document.querySelector(s);
+const state = {
+  notes: [], total: 0, W: 600,
+  frames: [], results: null, session: null,
+  hist: [], live: null,
+};
+const opts = () => ({
+  tempo: Number($('#tempo').value),
+  voiceShift: $('#voice').value === 'low' ? -12 : 0,
+  metro: $('#metro').checked,
+  fold: $('#fold').checked,
+});
+
+// ---------- Ses ----------
+let ctx = null, master = null, analyser = null, buf = null, scheduled = [];
+let micStream = null, micSrc = null, lastLoud = 0;
+const MIC_KEY = 'solfejAynasi.micId';
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (_) {} },
+};
+async function ensureAudio() {
+  if (!ctx) {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    master = ctx.createGain(); master.gain.value = 0.9; master.connect(ctx.destination);
+  }
+  if (ctx.state === 'suspended') await ctx.resume();
+}
+async function enableMic() {
+  await ensureAudio();
+  if (analyser) return true;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showError('Bu tarayıcı mikrofonu desteklemiyor ya da sayfa güvenli bir adresten (https / localhost) açılmamış.');
+    return false;
+  }
+  const saved = store.get(MIC_KEY);
+  try {
+    await openMic(saved);
+  } catch (e) {
+    if (saved && e && (e.name === 'OverconstrainedError' || e.name === 'NotFoundError')) {
+      try { await openMic(null); } catch (e2) { micError(e2); return false; }
+    } else { micError(e); return false; }
+  }
+  return true;
+}
+function micError(e) {
+  const name = e && e.name;
+  showError(
+    name === 'NotAllowedError' ? 'Mikrofon izni verilmedi. Adres çubuğundaki simgeden mikrofona izin verip tekrar dene.' :
+    name === 'NotFoundError' ? 'Bilgisayarda mikrofon bulunamadı. Mikrofonun takılı olduğundan emin ol.' :
+    name === 'NotReadableError' ? 'Mikrofon başka bir program tarafından kullanılıyor olabilir (Zoom, Discord vb.). O programı kapatıp tekrar dene.' :
+    'Mikrofon açılamadı: ' + (e && e.message ? e.message : e));
+}
+
+async function openMic(deviceId) {
+  const audio = { echoCancellation: false, noiseSuppression: false, autoGainControl: false };
+  if (deviceId) audio.deviceId = { exact: deviceId };
+  const stream = await navigator.mediaDevices.getUserMedia({ audio });
+  if (micStream) micStream.getTracks().forEach(t => t.stop());
+  if (micSrc) micSrc.disconnect();
+  micStream = stream;
+  micSrc = ctx.createMediaStreamSource(stream);
+  if (!analyser) {
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 2048;
+    buf = new Float32Array(analyser.fftSize);
+  }
+  micSrc.connect(analyser);
+  const track = stream.getAudioTracks()[0];
+  const activeId = (track.getSettings && track.getSettings().deviceId) || deviceId || '';
+  if (activeId) store.set(MIC_KEY, activeId);
+  track.addEventListener('ended', () => {
+    $('#tSub').textContent = 'Mikrofon bağlantısı kesildi. Listeden yeniden seç.';
+  });
+  lastLoud = ctx.currentTime;
+  state.hist = [];
+  await refreshMicList(activeId, track.label);
+  $('#micBtn').textContent = '🎤 Mikrofon açık';
+  $('#micBtn').disabled = true;
+  $('#tSub').textContent = 'Bir nota söyle…';
+  if ($('#status .err')) $('#status').textContent = '';
+}
+
+async function refreshMicList(activeId, activeLabel) {
+  const sel = $('#micSelect');
+  let devs = [];
+  try { devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'audioinput'); } catch (_) {}
+  sel.innerHTML = '';
+  devs.forEach((d, i) => {
+    const o = document.createElement('option');
+    o.value = d.deviceId;
+    o.textContent = d.label || `Mikrofon ${i + 1}`;
+    sel.appendChild(o);
+  });
+  if (!devs.length) {
+    const o = document.createElement('option'); o.value = activeId || ''; o.textContent = activeLabel || 'Varsayılan mikrofon';
+    sel.appendChild(o);
+  }
+  if (activeId && [...sel.options].some(o => o.value === activeId)) sel.value = activeId;
+  else if (activeLabel) { const m = [...sel.options].find(o => o.textContent === activeLabel); if (m) sel.value = m.value; }
+  sel.disabled = !!state.session || sel.options.length < 2;
+}
+function showError(msg) { $('#status').innerHTML = '<span class="err"></span>'; $('#status .err').textContent = msg; }
+
+function tone(freq, t, dur, vol = 0.2) {
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = 'triangle'; o.frequency.value = freq;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol, t + 0.02);
+  g.gain.setValueAtTime(vol, t + Math.max(0.03, dur - 0.08));
+  g.gain.linearRampToValueAtTime(0, t + dur);
+  o.connect(g).connect(master);
+  o.start(t); o.stop(t + dur + 0.02);
+  scheduled.push(o);
+}
+function click(t, accent) {
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = 'square'; o.frequency.value = accent ? 2000 : 1500;
+  g.gain.setValueAtTime(accent ? 0.18 : 0.11, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
+  o.connect(g).connect(master);
+  o.start(t); o.stop(t + 0.04);
+  scheduled.push(o);
+}
+function stopAll() {
+  scheduled.forEach(o => { try { o.stop(); } catch (_) {} });
+  scheduled = [];
+  state.session = null;
+  setPlaying(false);
+}
+
+// ---------- Ses yüksekliği algılama (YIN) ----------
+let yinBuf = new Float32Array(2048);
+function detectPitch(b, sr) {
+  let rms = 0;
+  for (let i = 0; i < b.length; i++) rms += b[i] * b[i];
+  rms = Math.sqrt(rms / b.length);
+  if (rms < 0.002) return { freq: null, rms };
+  const W = b.length >> 1;
+  const minTau = Math.max(2, Math.floor(sr / 1100));
+  const maxTau = Math.min(W - 2, Math.ceil(sr / 65));
+  if (yinBuf.length < maxTau + 2) yinBuf = new Float32Array(maxTau + 2);
+  const d = yinBuf;
+  d[0] = 1;
+  let run = 0;
+  for (let tau = 1; tau <= maxTau + 1; tau++) {
+    let s = 0;
+    for (let i = 0; i < W; i++) { const x = b[i] - b[i + tau]; s += x * x; }
+    run += s;
+    d[tau] = run > 0 ? s * tau / run : 1;
+  }
+  let tau = -1;
+  for (let t = minTau; t <= maxTau; t++) {
+    if (d[t] < 0.15) {
+      while (t + 1 <= maxTau && d[t + 1] < d[t]) t++;
+      tau = t; break;
+    }
+  }
+  if (tau < 0) return { freq: null, rms };
+  const x0 = d[tau - 1], x1 = d[tau], x2 = d[tau + 1];
+  const den = x0 + x2 - 2 * x1;
+  const shift = den !== 0 ? (x0 - x2) / (2 * den) : 0;
+  const freq = sr / (tau + shift);
+  if (freq < 65 || freq > 1100) return { freq: null, rms };
+  return { freq, rms };
+}
+
+// ---------- Çizim yardımcıları ----------
+const L = 72, R = 18, ROLL_H = 230;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const xOf = beat => L + (beat / state.total) * (state.W - L - R);
+function noteAt(beat) { return state.notes.find(n => beat >= n.start && beat < n.start + n.dur) || null; }
+
+function layout() {
+  const avail = $('#scoreWrap').clientWidth;
+  state.W = Math.max(avail, L + R + state.total * 34);
+  $('#scoreInner').style.width = state.W + 'px';
+  const c = $('#roll'), dpr = window.devicePixelRatio || 1;
+  c.width = Math.round(state.W * dpr); c.height = Math.round(ROLL_H * dpr);
+  c.style.width = state.W + 'px'; c.style.height = ROLL_H + 'px';
+  renderStaff(-1);
+  drawRoll(null);
+}
+
+function renderStaff(activeIdx) {
+  const svg = $('#staff');
+  const W = state.W, g = 10, bottom = 100;
+  const yOfPos = p => bottom - p * (g / 2);
+  const ink = 'var(--ink)';
+  let s = '';
+  for (let i = 0; i < 5; i++) s += `<line x1="8" x2="${W - R}" y1="${bottom - i * g}" y2="${bottom - i * g}" stroke="${ink}" stroke-width="1" opacity=".75"/>`;
+  s += `<text x="6" y="104" font-size="60" fill="${ink}" font-family="'Segoe UI Symbol','Noto Music','Bravura',serif">𝄞</text>`;
+  s += `<text x="50" y="79" font-size="19" font-weight="800" fill="${ink}" text-anchor="middle" font-family="Georgia,serif">4</text>`;
+  s += `<text x="50" y="99" font-size="19" font-weight="800" fill="${ink}" text-anchor="middle" font-family="Georgia,serif">4</text>`;
+  for (let b = 4; b < state.total; b += 4) {
+    const x = xOf(b) - 3;
+    s += `<line x1="${x}" x2="${x}" y1="${bottom - 4 * g}" y2="${bottom}" stroke="${ink}" stroke-width="1"/>`;
+  }
+  const xe = W - R;
+  s += `<line x1="${xe - 5}" x2="${xe - 5}" y1="${bottom - 4 * g}" y2="${bottom}" stroke="${ink}" stroke-width="1"/>`;
+  s += `<line x1="${xe - 1}" x2="${xe - 1}" y1="${bottom - 4 * g}" y2="${bottom}" stroke="${ink}" stroke-width="3"/>`;
+
+  state.notes.forEach((n, i) => {
+    const pos = (n.oct * 7 + n.letter) - 30; // Mi4 = alt çizgi
+    const cx = xOf(n.start) + 10, cy = yOfPos(pos);
+    let color = ink;
+    if (state.results) {
+      const r = state.results.notes[i];
+      color = r.status === 'good' ? 'var(--good)' : r.status === 'close' ? 'var(--warn)' : 'var(--bad)';
+    }
+    if (i === activeIdx) color = 'var(--accent)';
+    for (let p = -2; p >= pos; p -= 2) s += `<line x1="${cx - 10}" x2="${cx + 10}" y1="${yOfPos(p)}" y2="${yOfPos(p)}" stroke="${ink}" stroke-width="1"/>`;
+    for (let p = 10; p <= pos; p += 2) s += `<line x1="${cx - 10}" x2="${cx + 10}" y1="${yOfPos(p)}" y2="${yOfPos(p)}" stroke="${ink}" stroke-width="1"/>`;
+    const hollow = n.dur >= 2;
+    s += `<ellipse cx="${cx}" cy="${cy}" rx="6.2" ry="4.4" transform="rotate(-20 ${cx} ${cy})" ` +
+         (hollow ? `fill="none" stroke="${color}" stroke-width="1.8"` : `fill="${color}"`) + `/>`;
+    if (n.dur < 4) {
+      if (pos < 4) s += `<line x1="${cx + 5.6}" x2="${cx + 5.6}" y1="${cy - 1}" y2="${cy - 34}" stroke="${color}" stroke-width="1.4"/>`;
+      else s += `<line x1="${cx - 5.6}" x2="${cx - 5.6}" y1="${cy + 1}" y2="${cy + 34}" stroke="${color}" stroke-width="1.4"/>`;
+    }
+    if (n.dur === 3) s += `<circle cx="${cx + 11}" cy="${pos % 2 === 0 ? cy - 2.5 : cy}" r="1.9" fill="${color}"/>`;
+    s += `<text x="${cx}" y="143" font-size="12" font-weight="${i === activeIdx ? 800 : 600}" text-anchor="middle" fill="${i === activeIdx ? 'var(--accent)' : 'var(--muted)'}">${syllable(n.midi)}</text>`;
+  });
+  svg.setAttribute('width', W);
+  svg.setAttribute('viewBox', `0 0 ${W} 150`);
+  svg.innerHTML = s;
+}
+
+function rollRange() {
+  let lo = Math.min(...state.notes.map(n => n.midi)) - 2;
+  let hi = Math.max(...state.notes.map(n => n.midi)) + 2;
+  while (hi - lo < 12) { hi++; if (hi - lo < 12) lo--; }
+  return { lo, hi };
+}
+
+function drawRoll(playhead) {
+  const c = $('#roll'), g = c.getContext('2d'), dpr = window.devicePixelRatio || 1;
+  const W = state.W, H = ROLL_H, top = 10, bot = 10;
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, W, H);
+  const { lo, hi } = rollRange();
+  const yOf = m => top + (hi - m) / (hi - lo) * (H - top - bot);
+  const o = opts();
+
+  // ızgara
+  g.font = '600 11px system-ui, sans-serif';
+  g.textAlign = 'right'; g.textBaseline = 'middle';
+  for (let m = lo; m <= hi; m++) {
+    const white = SEMI_TO_LETTER[((m % 12) + 12) % 12] !== undefined;
+    g.strokeStyle = css('--grid'); g.lineWidth = 1;
+    g.beginPath(); g.moveTo(L, yOf(m)); g.lineTo(W - R, yOf(m)); g.stroke();
+    if (white) { g.fillStyle = css('--muted'); g.fillText(midiName(m), L - 8, yOf(m)); }
+  }
+  g.strokeStyle = css('--line');
+  for (let b = 0; b <= state.total; b += 4) {
+    const x = b === 0 ? L : xOf(b) - 3;
+    g.beginPath(); g.moveTo(x, top); g.lineTo(x, H - bot); g.stroke();
+  }
+
+  // hedef notalar
+  const rowH = (H - top - bot) / (hi - lo);
+  state.notes.forEach((n, i) => {
+    const x1 = xOf(n.start) + 1, x2 = xOf(n.start + n.dur) - 2, y = yOf(n.midi);
+    let fill = css('--target'), edge = css('--target-edge');
+    if (state.results) {
+      const st = state.results.notes[i].status;
+      edge = st === 'good' ? css('--good') : st === 'close' ? css('--warn') : css('--bad');
+    }
+    const active = playhead != null && playhead >= n.start && playhead < n.start + n.dur;
+    g.fillStyle = fill; g.strokeStyle = active ? css('--accent') : edge; g.lineWidth = active ? 2.5 : 1.5;
+    roundRect(g, x1, y - rowH * 0.42, Math.max(4, x2 - x1), rowH * 0.84, 5);
+    g.fill(); g.stroke();
+  });
+
+  // söylenen ses izi
+  let prev = null;
+  g.save();
+  g.beginPath(); g.rect(L, 0, W - L - R, H); g.clip();
+  g.lineWidth = 3; g.lineCap = 'round';
+  for (const f of state.frames) {
+    if (f.midi == null) { prev = null; continue; }
+    const n = noteAt(f.beat);
+    let disp = f.midi - o.voiceShift;
+    if (o.fold) disp = foldNear(disp, n ? n.midi : (lo + hi) / 2);
+    const cur = { x: xOf(f.beat), y: yOf(disp), disp, beat: f.beat };
+    if (prev && cur.beat - prev.beat < 0.3 && Math.abs(cur.disp - prev.disp) < 1.5 && disp > lo - 1 && disp < hi + 1) {
+      let col = css('--muted');
+      if (n) {
+        const c = Math.abs((disp - n.midi) * 100);
+        col = c <= 30 ? css('--good') : c <= 60 ? css('--warn') : css('--bad');
+      }
+      g.strokeStyle = col;
+      g.beginPath(); g.moveTo(prev.x, prev.y); g.lineTo(cur.x, cur.y); g.stroke();
+    }
+    prev = cur;
+  }
+  g.restore();
+
+  // oynatma çizgisi
+  if (playhead != null && playhead >= 0 && playhead <= state.total) {
+    const x = xOf(playhead);
+    g.strokeStyle = css('--accent'); g.lineWidth = 2;
+    g.beginPath(); g.moveTo(x, top - 4); g.lineTo(x, H - bot + 4); g.stroke();
+  }
+}
+function roundRect(g, x, y, w, h, r) {
+  g.beginPath();
+  g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r);
+  g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath();
+}
+
+// ---------- Oturumlar ----------
+function setPlaying(on) {
+  $('#listenBtn').disabled = on; $('#singBtn').disabled = on; $('#stopBtn').disabled = !on;
+  $('#exSelect').disabled = on; $('#randomBtn').disabled = on; $('#tempo').disabled = on; $('#voice').disabled = on;
+  $('#micSelect').disabled = on || !analyser || $('#micSelect').options.length < 2;
+  if (!on) { $('#status').textContent = ''; $('#status').className = ''; }
+}
+
+async function listen() {
+  await ensureAudio();
+  stopAll();
+  const o = opts(), beat = 60 / o.tempo, t0 = ctx.currentTime + 0.15;
+  state.notes.forEach(n => tone(midiToFreq(n.midi + o.voiceShift), t0 + n.start * beat, n.dur * beat * 0.95));
+  state.session = { mode: 'listen', start: t0, beat };
+  setPlaying(true);
+  $('#status').textContent = 'Dinle…';
+}
+
+async function sing() {
+  if (!(await enableMic())) return;
+  stopAll();
+  const o = opts(), beat = 60 / o.tempo, t0 = ctx.currentTime + 0.15;
+  const first = state.notes[0].midi + o.voiceShift;
+  tone(midiToFreq(first), t0, 1.1);
+  const countStart = t0 + 1.4;
+  for (let i = 0; i < 4; i++) click(countStart + i * beat, i === 0);
+  const start = countStart + 4 * beat;
+  if (o.metro) for (let b = 0; b < state.total; b++) click(start + b * beat, b % 4 === 0);
+  state.frames = []; state.results = null;
+  state.session = { mode: 'sing', start, beat, refEnd: t0 + 1.1, firstName: midiName(first) };
+  renderStaff(-1);
+  renderResultsHelp('Söylüyorsun… Bitince sonucun burada görünecek.');
+  setPlaying(true);
+}
+
+function finishSing() {
+  const o = opts();
+  const notes = state.notes.map(n => {
+    const a = n.start + Math.min(0.3, n.dur * 0.25), b = n.start + n.dur - 0.05;
+    const fr = state.frames.filter(f => f.beat >= a && f.beat < b);
+    const voiced = fr.filter(f => f.midi != null);
+    const devs = voiced.map(f => {
+      let disp = f.midi - o.voiceShift;
+      if (o.fold) disp = foldNear(disp, n.midi);
+      return (disp - n.midi) * 100;
+    });
+    const coverage = fr.length ? voiced.length / fr.length : 0;
+    const acc = devs.length ? devs.filter(c => Math.abs(c) <= 50).length / devs.length : 0;
+    const med = devs.length ? median(devs) : null;
+    let status = 'miss';
+    if (coverage >= 0.3) status = acc >= 0.7 ? 'good' : acc >= 0.4 ? 'close' : 'bad';
+    const score = coverage < 0.3 ? 0 : acc * Math.min(1, coverage / 0.6);
+    return { n, coverage, acc, med, status, score };
+  });
+  const total = Math.round(100 * notes.reduce((s, r) => s + r.score, 0) / notes.length);
+  state.results = { notes, total };
+  renderResults();
+  renderStaff(-1);
+  drawRoll(null);
+}
+function median(a) { const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
+
+function noteFeedback(r) {
+  if (r.status === 'miss') return 'ses algılanmadı';
+  const c = Math.round(r.med);
+  if (Math.abs(c) > 70) {
+    const semis = Math.round(c / 100);
+    if (semis % 12 === 0) return `${Math.abs(semis / 12)} oktav ${semis > 0 ? 'tiz' : 'pes'}`;
+    return `≈ ${syllable(Math.round(r.n.midi + c / 100))} söyledin`;
+  }
+  if (Math.abs(c) <= 20) return 'tam isabet';
+  return c > 0 ? `${c} sent tiz` : `${-c} sent pes`;
+}
+function renderResults() {
+  const { notes, total } = state.results;
+  const voicedMeds = notes.filter(r => r.med != null && Math.abs(r.med) <= 70).map(r => r.med);
+  const avg = voicedMeds.length ? voicedMeds.reduce((s, x) => s + x, 0) / voicedMeds.length : 0;
+  const missed = notes.filter(r => r.status === 'miss').length;
+  const tips = [];
+  if (missed > notes.length / 3) tips.push('Birçok notada ses algılanmadı: mikrofona biraz daha yakın ve daha gür söyle.');
+  if (avg > 15) tips.push('Genel olarak biraz tiz söylüyorsun; notalara hafifçe aşağıdan otur.');
+  else if (avg < -15) tips.push('Genel olarak biraz pes söylüyorsun; sesi biraz daha yukarıda tut.');
+  const bad = notes.filter(r => r.status === 'bad');
+  if (bad.length) tips.push(`Zorlandığın notalar: ${[...new Set(bad.map(r => syllable(r.n.midi)))].join(', ')}. Bu notalara yavaş tempoda tekrar çalış.`);
+  if (!tips.length) tips.push(total >= 85 ? 'Harika! Tempoyu artırmayı ya da yeni bir alıştırma denemeyi düşünebilirsin.' : 'İyi gidiyor, bir kez daha dene.');
+
+  const box = $('#resultBox');
+  box.innerHTML = '';
+  const big = document.createElement('div'); big.className = 'scoreBig'; big.textContent = `${total} / 100`;
+  box.appendChild(big);
+  tips.forEach(t => { const p = document.createElement('p'); p.style.margin = '4px 0'; p.textContent = t; box.appendChild(p); });
+  const chips = document.createElement('div'); chips.className = 'chips';
+  notes.forEach(r => {
+    const c = document.createElement('span'); c.className = 'chip ' + r.status;
+    const b = document.createElement('b'); b.textContent = syllable(r.n.midi);
+    c.appendChild(b); c.append(' · ' + noteFeedback(r));
+    chips.appendChild(c);
+  });
+  box.appendChild(chips);
+}
+function renderResultsHelp(text) {
+  $('#resultBox').innerHTML = '<p class="muted" style="margin:0"></p>';
+  $('#resultBox p').textContent = text;
+}
+
+// ---------- Ana döngü ----------
+let lastActive = -2;
+function loop() {
+  requestAnimationFrame(loop);
+  let midi = null, freq = null, rms = 0;
+  if (analyser) {
+    analyser.getFloatTimeDomainData(buf);
+    const r = detectPitch(buf, ctx.sampleRate);
+    rms = r.rms;
+    if (r.freq) {
+      state.hist.push(freqToMidi(r.freq));
+      if (state.hist.length > 3) state.hist.shift();
+      midi = median(state.hist);
+      freq = midiToFreq(midi);
+    } else state.hist = [];
+    updateTuner(midi, freq, rms);
+  }
+  const s = state.session;
+  if (!s) return;
+  const lat = analyser ? (analyser.fftSize / 2) / ctx.sampleRate + 0.02 : 0;
+  const beatNow = (ctx.currentTime - s.start) / s.beat;
+  if (s.mode === 'sing') {
+    const fb = (ctx.currentTime - lat - s.start) / s.beat;
+    if (fb >= -0.5 && fb <= state.total + 0.5) state.frames.push({ beat: fb, midi });
+    const st = $('#status');
+    if (ctx.currentTime < s.refEnd) { st.textContent = `Başlangıç sesi: ${s.firstName}`; st.className = ''; }
+    else if (beatNow < 0) { st.textContent = `Sayım: ${4 + Math.floor(beatNow) + 1}`; st.className = ''; }
+    else if (beatNow < state.total) {
+      const n = noteAt(beatNow);
+      st.textContent = n ? `Söyle: ${syllable(n.midi)}` : ''; st.className = 'go';
+    }
+  }
+  const idx = state.notes.findIndex(n => beatNow >= n.start && beatNow < n.start + n.dur);
+  if (idx !== lastActive) { renderStaff(idx); lastActive = idx; }
+  drawRoll(beatNow);
+  if (beatNow >= state.total + 0.4) {
+    const mode = s.mode;
+    state.session = null; setPlaying(false); lastActive = -2;
+    if (mode === 'sing') finishSing(); else { renderStaff(-1); drawRoll(null); }
+  }
+}
+
+function updateTuner(midi, freq, rms) {
+  const db = rms > 0 ? 20 * Math.log10(rms) : -100;
+  $('#level').style.width = Math.max(0, Math.min(100, (db + 60) / 50 * 100)) + '%';
+  if (rms > 0.002) lastLoud = ctx.currentTime;
+  if (midi == null) {
+    $('#tNote').textContent = '—'; $('#needle').style.left = '50%';
+    if (ctx.currentTime - lastLoud > 3) $('#tSub').textContent = 'Mikrofondan ses gelmiyor. Ayarlardan başka bir mikrofon seçmeyi dene.';
+    else if (/ses gelmiyor/.test($('#tSub').textContent)) $('#tSub').textContent = 'Bir nota söyle…';
+    return;
+  }
+  const near = Math.round(midi), cents = Math.round((midi - near) * 100);
+  $('#tNote').textContent = midiName(near);
+  const s = state.session;
+  let extra = '';
+  if (s && s.mode === 'sing') {
+    const n = noteAt((ctx.currentTime - s.start) / s.beat);
+    if (n) extra = ` · hedef ${midiName(n.midi + opts().voiceShift)}`;
+  }
+  $('#tSub').textContent = `${cents > 0 ? '+' : ''}${cents} sent · ${freq.toFixed(1)} Hz${extra}`;
+  $('#needle').style.left = (50 + Math.max(-50, Math.min(50, cents))) + '%';
+}
+
+// ---------- Kurulum ----------
+function loadExercise(str) {
+  stopAll();
+  state.notes = parseExercise(str);
+  state.total = state.notes.reduce((s, n) => s + n.dur, 0);
+  state.frames = []; state.results = null;
+  renderResultsHelp('Hazır. Önce Dinle, sonra Söyle.');
+  layout();
+}
+PRESETS.forEach((p, i) => {
+  const o = document.createElement('option'); o.value = i; o.textContent = p.name; $('#exSelect').appendChild(o);
+});
+const randOpt = document.createElement('option'); randOpt.value = 'r'; randOpt.textContent = '★ Rastgele alıştırma'; randOpt.hidden = true;
+$('#exSelect').appendChild(randOpt);
+
+$('#exSelect').addEventListener('change', e => { if (e.target.value !== 'r') loadExercise(PRESETS[e.target.value].notes); });
+$('#randomBtn').addEventListener('click', () => { randOpt.hidden = false; $('#exSelect').value = 'r'; loadExercise(randomExercise()); });
+$('#tempo').addEventListener('input', e => { $('#tempoVal').textContent = e.target.value; });
+$('#fold').addEventListener('change', () => { if (state.results) finishSing(); else drawRoll(null); });
+$('#micBtn').addEventListener('click', enableMic);
+$('#micSelect').addEventListener('change', async e => {
+  const id = e.target.value;
+  try { await ensureAudio(); await openMic(id); }
+  catch (err) { micError(err); }
+});
+if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+  navigator.mediaDevices.addEventListener('devicechange', () => {
+    if (!micStream) return;
+    const t = micStream.getAudioTracks()[0];
+    refreshMicList(t && t.getSettings ? t.getSettings().deviceId : '', t && t.label);
+  });
+}
+$('#listenBtn').addEventListener('click', listen);
+$('#singBtn').addEventListener('click', sing);
+$('#stopBtn').addEventListener('click', () => { stopAll(); renderStaff(-1); drawRoll(null); lastActive = -2; });
+window.addEventListener('resize', () => layout());
+if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => layout());
+
+loadExercise(PRESETS[0].notes);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
