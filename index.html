@@ -2,117 +2,265 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Solfej Aynası</title>
+<meta name="description" content="Notayı söyle, sesinin hedef notaya ne kadar yakın olduğunu anında gör. Tarayıcıda çalışan solfej çalışma aracı.">
+<meta name="theme-color" content="#f3eee3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15120e" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Solfej Aynası">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
   :root {
-    --bg: #f5f3ee; --panel: #ffffff; --ink: #1d1b18; --muted: #6b665d; --line: #dcd6ca;
-    --accent: #3b5bdb; --accent-ink: #ffffff; --good: #2f9e44; --warn: #d9950b; --bad: #e03131;
-    --target: #d3dbf7; --target-edge: #8ea0e6; --grid: #ece8df; --shadow: 0 1px 2px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.05);
+    color-scheme: light dark;
+    --serif: "Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23857b6c' stroke-width='1.6'/%3E%3C/svg%3E");
+  }
+  :root {
+    --bg: #f3eee3; --panel: #fbf8f1; --ink: #1b1814; --muted: #6e665a; --line: #d9cfbd;
+    --accent: #c4421a; --accent-ink: #fbf8f1; --good: #2e6b3c; --warn: #a8740f; --bad: #9e2a2b;
+    --target: #e6dcc8; --target-edge: #9c907c; --grid: #ebe3d4; --zone: rgba(46,107,60,.12);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #141418; --panel: #1f1f26; --ink: #ecebe8; --muted: #a19d95; --line: #3a3a45;
-      --accent: #7c94ff; --accent-ink: #0f1020; --good: #51cf66; --warn: #fcc419; --bad: #ff6b6b;
-      --target: #2b3358; --target-edge: #5568b8; --grid: #26262f; --shadow: none;
+      --bg: #15120e; --panel: #1c1813; --ink: #ede5d5; --muted: #a39886; --line: #3a332a;
+      --accent: #ee6a3c; --accent-ink: #15120e; --good: #84bd8f; --warn: #d9a640; --bad: #e2686a;
+      --target: #2e271f; --target-edge: #7d725f; --grid: #241f19; --zone: rgba(132,189,143,.14);
     }
   }
   :root[data-theme="dark"] {
-    --bg: #141418; --panel: #1f1f26; --ink: #ecebe8; --muted: #a19d95; --line: #3a3a45;
-    --accent: #7c94ff; --accent-ink: #0f1020; --good: #51cf66; --warn: #fcc419; --bad: #ff6b6b;
-    --target: #2b3358; --target-edge: #5568b8; --grid: #26262f; --shadow: none;
+    --bg: #15120e; --panel: #1c1813; --ink: #ede5d5; --muted: #a39886; --line: #3a332a;
+    --accent: #ee6a3c; --accent-ink: #15120e; --good: #84bd8f; --warn: #d9a640; --bad: #e2686a;
+    --target: #2e271f; --target-edge: #7d725f; --grid: #241f19; --zone: rgba(132,189,143,.14);
   }
   * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   body {
     margin: 0; background: var(--bg); color: var(--ink);
-    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font: 15px/1.55 var(--sans);
+    -webkit-tap-highlight-color: transparent;
   }
-  .page { max-width: 1040px; margin: 0 auto; padding: 20px 16px 48px; }
-  header h1 { margin: 0; font-size: 26px; letter-spacing: -.01em; }
-  header p { margin: 4px 0 0; color: var(--muted); }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); margin-top: 16px; }
-  .controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: end; }
-  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-  .field > span { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  ::selection { background: var(--accent); color: var(--accent-ink); }
+  .page {
+    max-width: 1080px; margin: 0 auto;
+    padding: calc(28px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right))
+             calc(56px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));
+  }
+  button, select, input, label { touch-action: manipulation; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  /* Başlık: altında ince bir dizek */
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 32px; flex-wrap: wrap; }
+  h1 {
+    margin: 0; font-family: var(--serif); font-weight: 600; font-size: 52px; line-height: .95;
+    letter-spacing: -.025em; font-variation-settings: "opsz" 144;
+  }
+  h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
+  header p { margin: 0 0 4px; font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.35; color: var(--muted); max-width: 32ch; }
+  .staffRule {
+    height: 21px; margin: 18px 0 0;
+    background: repeating-linear-gradient(to bottom, var(--ink) 0 1px, transparent 1px 5px);
+    opacity: .5;
+  }
+
+  /* Ayarlar */
+  .controls { display: grid; grid-template-columns: 1.7fr 1.2fr 1fr 1fr; border-bottom: 1px solid var(--line); }
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 14px 18px 16px; border-left: 1px solid var(--line); }
+  .field:first-child { border-left: 0; padding-left: 0; }
+  .field.opts { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 22px; border-left: 0; border-top: 1px solid var(--line); padding: 10px 0; }
+  .field > span { font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--muted); }
+  .field > span b { font-family: var(--sans); font-style: normal; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .field > span em { color: var(--accent); }
   select, button { font: inherit; color: inherit; }
-  select { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; max-width: 100%; }
-  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .check { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; }
-  input[type=range] { width: 140px; accent-color: var(--accent); }
-  button { border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 8px 14px; cursor: pointer; font-weight: 600; }
-  button:hover:not(:disabled) { border-color: var(--accent); }
-  button:disabled { opacity: .45; cursor: not-allowed; }
+  select {
+    appearance: none; -webkit-appearance: none;
+    background: transparent var(--chev) no-repeat right 2px center;
+    border: 0; border-bottom: 1.5px solid var(--ink); border-radius: 0;
+    padding: 6px 22px 6px 0; max-width: 100%; font-size: 16px; font-weight: 500; cursor: pointer;
+  }
+  select:disabled { color: var(--muted); border-bottom-color: var(--line); cursor: default; }
+  select option { background: var(--panel); color: var(--ink); }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .check { display: flex; align-items: center; gap: 8px; font-size: 15px; cursor: pointer; }
+  .check input { accent-color: var(--ink); width: 16px; height: 16px; margin: 0; }
+  input[type=range] { width: 100%; accent-color: var(--accent); margin: 6px 0 0; }
+
+  /* Düğmeler */
+  button {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border: 1.5px solid var(--ink); background: transparent; border-radius: 3px;
+    padding: 8px 16px; cursor: pointer; font-weight: 500; font-size: 15px; line-height: 1.2;
+    transition: background-color .12s, color .12s, border-color .12s;
+  }
+  button svg { width: 14px; height: 14px; fill: currentColor; flex: none; }
+  @media (hover: hover) {
+    button:hover:not(:disabled) { background: var(--ink); color: var(--bg); }
+    button.primary:hover:not(:disabled) { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  }
+  button:active:not(:disabled) { transform: translateY(1px); }
+  button:disabled { opacity: .35; cursor: not-allowed; }
   button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-  .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
-  #status { margin-left: auto; font-weight: 700; font-size: 16px; min-height: 24px; }
+  button.quiet { border-color: var(--line); padding: 6px 12px; font-size: 14px; }
+
+  /* Nota + grafik */
+  #scoreCard { margin-top: 26px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+  #status { margin-left: auto; font-family: var(--serif); font-style: italic; font-size: 22px; line-height: 1.2; min-height: 27px; }
   #status.go { color: var(--accent); }
-  .scoreWrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .scoreWrap {
+    overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+    background: var(--panel); border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink);
+  }
   #staff { display: block; }
   #roll { display: block; border-top: 1px solid var(--line); }
-  .grid2 { display: grid; grid-template-columns: 1fr 1.6fr; gap: 16px; }
-  @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
-  .grid2 .card { margin-top: 0; }
-  .tunerNote { font-size: 44px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
-  .tunerSub { color: var(--muted); font-variant-numeric: tabular-nums; min-height: 22px; }
-  .meter { position: relative; height: 14px; border-radius: 7px; background: linear-gradient(90deg, var(--bad) 0%, var(--warn) 25%, var(--good) 42%, var(--good) 58%, var(--warn) 75%, var(--bad) 100%); opacity: .85; margin: 12px 0 4px; }
-  .needle { position: absolute; top: -5px; width: 4px; height: 24px; margin-left: -2px; border-radius: 2px; background: var(--ink); left: 50%; transition: left .08s linear; }
-  .meterLabels { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
-  .level { height: 6px; border-radius: 3px; background: var(--grid); overflow: hidden; margin-top: 12px; }
-  .level > div { height: 100%; width: 0; background: var(--accent); transition: width .05s linear; }
-  h2 { font-size: 15px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
-  .scoreBig { font-size: 40px; font-weight: 800; }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .chip { border-radius: 8px; padding: 4px 8px; font-size: 13px; border: 1px solid var(--line); }
-  .chip b { font-weight: 700; }
-  .chip.good { border-color: var(--good); color: var(--good); }
-  .chip.close { border-color: var(--warn); color: var(--warn); }
-  .chip.bad, .chip.miss { border-color: var(--bad); color: var(--bad); }
+
+  /* Akort + sonuç */
+  .grid2 { display: grid; grid-template-columns: 1fr 1.5fr; border-bottom: 1px solid var(--line); }
+  .grid2 > section { padding: 20px 0 24px; min-width: 0; }
+  .grid2 > section + section { padding-left: 28px; margin-left: 28px; border-left: 1px solid var(--line); }
+  h2 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 17px; margin: 0 0 8px; color: var(--muted); }
+  .tunerNote { font-family: var(--serif); font-weight: 500; font-size: 68px; line-height: 1; letter-spacing: -.02em; font-variation-settings: "opsz" 144; }
+  .tunerSub { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; min-height: 22px; margin-top: 6px; }
+  /* Cetvel biçiminde akort göstergesi: ±50 sent, orta bölge ±20 sent */
+  .meter { position: relative; height: 34px; margin: 16px 0 4px; border-bottom: 1px solid var(--ink); }
+  .meter .zone { position: absolute; left: 30%; width: 40%; top: 0; bottom: 0; background: var(--zone); }
+  .meter i { position: absolute; bottom: 0; width: 1px; height: 8px; margin-left: -.5px; background: var(--muted); }
+  .meter i.mid { height: 100%; width: 1.5px; background: var(--ink); }
+  .needle { position: absolute; top: 0; bottom: -4px; width: 2px; margin-left: -1px; background: var(--accent); left: 50%; transition: left .08s linear; }
+  .needle::before { content: ""; position: absolute; top: -4px; left: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  .meterLabels { display: flex; justify-content: space-between; font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--muted); }
+  .level { height: 2px; background: var(--line); overflow: hidden; margin-top: 14px; }
+  .level > div { height: 100%; width: 0; background: var(--ink); transition: width .05s linear; }
+  .scoreBig { font-family: var(--serif); font-weight: 500; font-size: 68px; line-height: 1; letter-spacing: -.02em; font-variation-settings: "opsz" 144; }
+  .scoreBig small { font-size: 24px; color: var(--muted); font-weight: 400; letter-spacing: 0; margin-left: 4px; }
+  .tips p { margin: 8px 0 0; max-width: 60ch; }
+  .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); column-gap: 20px; margin-top: 16px; border-top: 1px solid var(--line); }
+  .chip { display: flex; align-items: baseline; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  .chip::before { content: ""; flex: none; width: 7px; height: 7px; border-radius: 50%; transform: translateY(-1px); background: var(--line); }
+  .chip b { font-family: var(--serif); font-weight: 600; font-size: 16px; color: var(--ink); min-width: 2.4em; }
+  .chip.good::before { background: var(--good); }
+  .chip.close::before { background: var(--warn); }
+  .chip.bad::before, .chip.miss::before { background: var(--bad); }
+  .chip.bad, .chip.miss { color: var(--bad); }
   .muted { color: var(--muted); }
-  .help { margin: 0; padding-left: 18px; color: var(--muted); }
-  .help li { margin: 2px 0; }
-  .err { color: var(--bad); font-weight: 600; }
+  .help { margin: 0; padding: 0; list-style: none; counter-reset: s; }
+  .help li { counter-increment: s; display: grid; grid-template-columns: 28px 1fr; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .help li:last-child { border-bottom: 0; }
+  .help li::before { content: counter(s) "."; font-family: var(--serif); font-style: italic; color: var(--accent); font-size: 17px; line-height: 1.35; }
+  .err { color: var(--bad); font-family: var(--sans); font-style: normal; font-size: 15px; font-weight: 500; }
+
+  /* Dokunmatik ekranlar: parmakla rahat basılacak boyutlar */
+  @media (pointer: coarse) {
+    button { min-height: 44px; }
+    select { min-height: 40px; }
+    .check { min-height: 36px; }
+    .check input { width: 20px; height: 20px; }
+    input[type=range] { height: 32px; }
+  }
+  @media (max-width: 860px) {
+    .controls { grid-template-columns: 1fr 1fr; }
+    .field { padding: 12px 0 14px; border-left: 0; border-top: 1px solid var(--line); }
+    .field:nth-child(-n+2) { border-top: 0; }
+    .field:nth-child(2n) { padding-left: 18px; border-left: 1px solid var(--line); }
+    .field.opts { padding-left: 0; border-left: 0; }
+  }
+  @media (max-width: 760px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .grid2 > section + section { padding-left: 0; margin-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+  }
+  /* Telefon */
+  @media (max-width: 640px) {
+    .page { padding-top: calc(20px + env(safe-area-inset-top)); padding-left: calc(16px + env(safe-area-inset-left)); padding-right: calc(16px + env(safe-area-inset-right)); padding-bottom: calc(136px + env(safe-area-inset-bottom)); }
+    h1 { font-size: 40px; }
+    header p { font-size: 16px; }
+    .staffRule { margin-top: 14px; height: 17px; background: repeating-linear-gradient(to bottom, var(--ink) 0 1px, transparent 1px 4px); }
+    .controls .wide { grid-column: 1 / -1; padding-left: 0; border-left: 0; }
+    .field:nth-child(-n+2) { border-top: 1px solid var(--line); }
+    .field:first-child { border-top: 0; }
+    .field.opts { gap: 4px 18px; flex-wrap: wrap; }
+    #scoreCard { margin-top: 18px; }
+    .scoreWrap { margin: 0 -16px; border-left: 0; border-right: 0; }
+    /* Oynatma tuşları ekranın altına sabit */
+    .actions {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; margin: 0;
+      padding: 8px calc(12px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+      background: var(--panel); border-top: 1.5px solid var(--ink); gap: 6px;
+    }
+    .actions button { flex: 1 1 0; min-width: 0; padding: 8px 6px; white-space: nowrap; }
+    #micBtn.is-on { display: none; }
+    .lg { display: none; }
+    #status { order: -1; flex: 1 0 100%; margin: 0 0 2px; text-align: center; font-size: 19px; min-height: 24px; }
+    .tunerNote, .scoreBig { font-size: 56px; }
+  }
+  @media (max-width: 380px) {
+    .actions button svg { display: none; }
+    .actions button { padding: 8px 4px; }
+  }
+  @media (max-width: 360px) {
+    .controls { grid-template-columns: 1fr; }
+    .field:nth-child(2n) { padding-left: 0; border-left: 0; }
+    .actions button { font-size: 14px; gap: 6px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .needle, .level > div, button { transition: none; }
+    button:active:not(:disabled) { transform: none; }
+  }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-mic" viewBox="0 0 16 16"><path d="M8 1a2.5 2.5 0 0 0-2.5 2.5v4a2.5 2.5 0 0 0 5 0v-4A2.5 2.5 0 0 0 8 1zm-4.5 6a.75.75 0 0 1 .75.75 3.75 3.75 0 0 0 7.5 0 .75.75 0 0 1 1.5 0 5.25 5.25 0 0 1-4.5 5.2V14.5h2a.75.75 0 0 1 0 1.5h-5.5a.75.75 0 0 1 0-1.5h2v-1.55a5.25 5.25 0 0 1-4.5-5.2A.75.75 0 0 1 3.5 7z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 16 16"><path d="M4 2.2v11.6a.7.7 0 0 0 1.06.6l9.3-5.8a.7.7 0 0 0 0-1.2l-9.3-5.8A.7.7 0 0 0 4 2.2z"/></symbol>
+  <symbol id="i-rec" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="10" rx="1"/></symbol>
+</svg>
 <div class="page">
   <header>
-    <h1>Solfej Aynası</h1>
-    <p>Notayı söyle, sesinin hedef notaya ne kadar yakın olduğunu anında gör.</p>
+    <h1>Solfej <em>Aynası</em></h1>
+    <p>Notayı söyle; sesinin hedef notaya ne kadar yakın olduğunu anında gör.</p>
   </header>
+  <div class="staffRule" aria-hidden="true"></div>
 
-  <section class="card controls" aria-label="Ayarlar">
-    <label class="field"><span>Alıştırma</span>
+  <section class="controls" aria-label="Ayarlar">
+    <label class="field wide"><span>Alıştırma</span>
       <div class="row">
-        <select id="exSelect"></select>
-        <button id="randomBtn" type="button">Rastgele üret</button>
+        <select id="exSelect" style="flex:1 1 0;min-width:0"></select>
+        <button id="randomBtn" type="button" class="quiet">Rastgele üret</button>
       </div>
     </label>
-    <label class="field"><span>Tempo: <b id="tempoVal">60</b> BPM</span>
+    <label class="field wide"><span>Tempo · <b id="tempoVal">60</b> · <em id="tempoName">Larghetto</em></span>
       <input id="tempo" type="range" min="40" max="120" step="2" value="60">
     </label>
     <label class="field"><span>Sesin</span>
       <select id="voice">
-        <option value="high">İnce ses (kadın / çocuk)</option>
-        <option value="low">Kalın ses (erkek)</option>
+        <option value="high">İnce (kadın / çocuk)</option>
+        <option value="low">Kalın (erkek)</option>
       </select>
     </label>
     <label class="field"><span>Mikrofon</span>
       <select id="micSelect" disabled><option>Önce mikrofonu aç</option></select>
     </label>
-    <div class="field"><span>Seçenekler</span>
-      <div class="row">
-        <label class="check"><input id="metro" type="checkbox" checked> Metronom</label>
-        <label class="check"><input id="fold" type="checkbox" checked> Oktav farkını yok say</label>
-      </div>
+    <div class="field opts">
+      <label class="check"><input id="metro" type="checkbox" checked> Metronom</label>
+      <label class="check"><input id="fold" type="checkbox" checked> Oktav farkını yok say</label>
     </div>
   </section>
 
-  <section class="card" aria-label="Nota ve ses grafiği">
+  <section id="scoreCard" aria-label="Nota ve ses grafiği">
     <div class="actions">
-      <button id="micBtn" type="button">🎤 Mikrofonu aç</button>
-      <button id="listenBtn" type="button">▶ Dinle</button>
-      <button id="singBtn" type="button" class="primary">● Söyle</button>
-      <button id="stopBtn" type="button" disabled>■ Durdur</button>
+      <button id="micBtn" type="button"><svg><use href="#i-mic"/></svg><span>Mikrofon<span class="lg">u aç</span></span></button>
+      <button id="listenBtn" type="button"><svg><use href="#i-play"/></svg>Dinle</button>
+      <button id="singBtn" type="button" class="primary"><svg><use href="#i-rec"/></svg>Söyle</button>
+      <button id="stopBtn" type="button" disabled><svg><use href="#i-stop"/></svg>Durdur</button>
       <div id="status" aria-live="polite"></div>
     </div>
     <div class="scoreWrap" id="scoreWrap">
@@ -123,23 +271,29 @@
     </div>
   </section>
 
-  <div class="grid2" style="margin-top:16px">
-    <section class="card" aria-label="Akort göstergesi">
+  <div class="grid2">
+    <section aria-label="Akort göstergesi">
       <h2>Şu an söylediğin</h2>
       <div class="tunerNote" id="tNote">—</div>
       <div class="tunerSub" id="tSub">Mikrofonu açınca burada görünecek</div>
-      <div class="meter"><div class="needle" id="needle"></div></div>
+      <div class="meter" aria-hidden="true">
+        <div class="zone"></div>
+        <i style="left:0"></i><i style="left:10%"></i><i style="left:20%"></i><i style="left:30%"></i><i style="left:40%"></i>
+        <i class="mid" style="left:50%"></i>
+        <i style="left:60%"></i><i style="left:70%"></i><i style="left:80%"></i><i style="left:90%"></i><i style="left:100%"></i>
+        <div class="needle" id="needle"></div>
+      </div>
       <div class="meterLabels"><span>pes</span><span>tam</span><span>tiz</span></div>
       <div class="level"><div id="level"></div></div>
     </section>
-    <section class="card" aria-label="Sonuç">
+    <section aria-label="Sonuç">
       <h2>Sonuç</h2>
       <div id="resultBox">
         <ol class="help">
-          <li><b>Mikrofonu aç</b> ve izin ver.</li>
-          <li><b>Dinle</b> ile ezgiyi bir kez duy.</li>
-          <li><b>Söyle</b>'ye bas: önce başlangıç sesi, sonra 4 vuruş sayım gelir, ardından notaları söyle.</li>
-          <li>Kulaklık takarsan metronom sesi mikrofona karışmaz.</li>
+          <li><span><b>Mikrofonu aç</b> ve izin ver.</span></li>
+          <li><span><b>Dinle</b> ile ezgiyi bir kez duy.</span></li>
+          <li><span><b>Söyle</b>'ye bas: önce başlangıç sesi, sonra 4 vuruş sayım gelir, ardından notaları söyle.</span></li>
+          <li><span>Kulaklık takarsan metronom sesi mikrofona karışmaz.</span></li>
         </ol>
       </div>
     </section>
@@ -287,10 +441,22 @@ async function openMic(deviceId) {
   lastLoud = ctx.currentTime;
   state.hist = [];
   await refreshMicList(activeId, track.label);
-  $('#micBtn').textContent = '🎤 Mikrofon açık';
+  $('#micBtn').innerHTML = '<svg><use href="#i-mic"/></svg><span>Mikrofon açık</span>';
   $('#micBtn').disabled = true;
+  $('#micBtn').classList.add('is-on');
   $('#tSub').textContent = 'Bir nota söyle…';
   if ($('#status .err')) $('#status').textContent = '';
+}
+
+// Uygulama arka plana geçince mikrofonu bırak (pil ve gizlilik için)
+function releaseMic() {
+  if (micStream) micStream.getTracks().forEach(t => t.stop());
+  if (micSrc) micSrc.disconnect();
+  micStream = null; micSrc = null; analyser = null; state.hist = [];
+  const b = $('#micBtn');
+  b.innerHTML = '<svg><use href="#i-mic"/></svg><span>Mikrofon<span class="lg">u aç</span></span>'; b.disabled = false; b.classList.remove('is-on');
+  $('#micSelect').disabled = true;
+  $('#tNote').textContent = '—'; $('#needle').style.left = '50%'; $('#level').style.width = '0';
 }
 
 async function refreshMicList(activeId, activeLabel) {
@@ -378,16 +544,26 @@ function detectPitch(b, sr) {
 }
 
 // ---------- Çizim yardımcıları ----------
-const L = 72, R = 18, ROLL_H = 230;
-const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const L = 72, R = 18;
+let ROLL_H = 230;
+// Renkleri her karede yeniden okumamak için önbellek (tema değişince temizlenir)
+const cssCache = new Map();
+const css = n => {
+  let v = cssCache.get(n);
+  if (v === undefined) { v = getComputedStyle(document.documentElement).getPropertyValue(n).trim(); cssCache.set(n, v); }
+  return v;
+};
+const isPhone = () => window.matchMedia('(max-width: 640px)').matches;
+const canvasDpr = () => Math.min(2, window.devicePixelRatio || 1);
 const xOf = beat => L + (beat / state.total) * (state.W - L - R);
 function noteAt(beat) { return state.notes.find(n => beat >= n.start && beat < n.start + n.dur) || null; }
 
 function layout() {
   const avail = $('#scoreWrap').clientWidth;
+  ROLL_H = isPhone() ? 190 : 230;
   state.W = Math.max(avail, L + R + state.total * 34);
   $('#scoreInner').style.width = state.W + 'px';
-  const c = $('#roll'), dpr = window.devicePixelRatio || 1;
+  const c = $('#roll'), dpr = canvasDpr();
   c.width = Math.round(state.W * dpr); c.height = Math.round(ROLL_H * dpr);
   c.style.width = state.W + 'px'; c.style.height = ROLL_H + 'px';
   renderStaff(-1);
@@ -402,8 +578,8 @@ function renderStaff(activeIdx) {
   let s = '';
   for (let i = 0; i < 5; i++) s += `<line x1="8" x2="${W - R}" y1="${bottom - i * g}" y2="${bottom - i * g}" stroke="${ink}" stroke-width="1" opacity=".75"/>`;
   s += `<text x="6" y="104" font-size="60" fill="${ink}" font-family="'Segoe UI Symbol','Noto Music','Bravura',serif">𝄞</text>`;
-  s += `<text x="50" y="79" font-size="19" font-weight="800" fill="${ink}" text-anchor="middle" font-family="Georgia,serif">4</text>`;
-  s += `<text x="50" y="99" font-size="19" font-weight="800" fill="${ink}" text-anchor="middle" font-family="Georgia,serif">4</text>`;
+  s += `<text x="50" y="79" font-size="20" font-weight="700" fill="${ink}" text-anchor="middle" font-family="Fraunces,Georgia,serif">4</text>`;
+  s += `<text x="50" y="99" font-size="20" font-weight="700" fill="${ink}" text-anchor="middle" font-family="Fraunces,Georgia,serif">4</text>`;
   for (let b = 4; b < state.total; b += 4) {
     const x = xOf(b) - 3;
     s += `<line x1="${x}" x2="${x}" y1="${bottom - 4 * g}" y2="${bottom}" stroke="${ink}" stroke-width="1"/>`;
@@ -431,7 +607,7 @@ function renderStaff(activeIdx) {
       else s += `<line x1="${cx - 5.6}" x2="${cx - 5.6}" y1="${cy + 1}" y2="${cy + 34}" stroke="${color}" stroke-width="1.4"/>`;
     }
     if (n.dur === 3) s += `<circle cx="${cx + 11}" cy="${pos % 2 === 0 ? cy - 2.5 : cy}" r="1.9" fill="${color}"/>`;
-    s += `<text x="${cx}" y="143" font-size="12" font-weight="${i === activeIdx ? 800 : 600}" text-anchor="middle" fill="${i === activeIdx ? 'var(--accent)' : 'var(--muted)'}">${syllable(n.midi)}</text>`;
+    s += `<text x="${cx}" y="143" font-size="14" font-style="italic" font-family="Fraunces,Georgia,serif" font-weight="${i === activeIdx ? 600 : 400}" text-anchor="middle" fill="${i === activeIdx ? 'var(--accent)' : 'var(--muted)'}">${syllable(n.midi)}</text>`;
   });
   svg.setAttribute('width', W);
   svg.setAttribute('viewBox', `0 0 ${W} 150`);
@@ -446,7 +622,7 @@ function rollRange() {
 }
 
 function drawRoll(playhead) {
-  const c = $('#roll'), g = c.getContext('2d'), dpr = window.devicePixelRatio || 1;
+  const c = $('#roll'), g = c.getContext('2d'), dpr = canvasDpr();
   const W = state.W, H = ROLL_H, top = 10, bot = 10;
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
   g.clearRect(0, 0, W, H);
@@ -455,7 +631,7 @@ function drawRoll(playhead) {
   const o = opts();
 
   // ızgara
-  g.font = '600 11px system-ui, sans-serif';
+  g.font = '500 11px "IBM Plex Sans", system-ui, sans-serif';
   g.textAlign = 'right'; g.textBaseline = 'middle';
   for (let m = lo; m <= hi; m++) {
     const white = SEMI_TO_LETTER[((m % 12) + 12) % 12] !== undefined;
@@ -480,7 +656,7 @@ function drawRoll(playhead) {
     }
     const active = playhead != null && playhead >= n.start && playhead < n.start + n.dur;
     g.fillStyle = fill; g.strokeStyle = active ? css('--accent') : edge; g.lineWidth = active ? 2.5 : 1.5;
-    roundRect(g, x1, y - rowH * 0.42, Math.max(4, x2 - x1), rowH * 0.84, 5);
+    roundRect(g, x1, y - rowH * 0.42, Math.max(4, x2 - x1), rowH * 0.84, 2);
     g.fill(); g.stroke();
   });
 
@@ -527,6 +703,31 @@ function setPlaying(on) {
   $('#exSelect').disabled = on; $('#randomBtn').disabled = on; $('#tempo').disabled = on; $('#voice').disabled = on;
   $('#micSelect').disabled = on || !analyser || $('#micSelect').options.length < 2;
   if (!on) { $('#status').textContent = ''; $('#status').className = ''; }
+  keepAwake(on);
+}
+
+// Çalarken / söylerken ekran kararmasın
+let wakeLock = null;
+async function keepAwake(on) {
+  try {
+    if (on && !wakeLock && 'wakeLock' in navigator && document.visibilityState === 'visible') {
+      const l = await navigator.wakeLock.request('screen');
+      if (!state.session) { l.release(); return; }
+      wakeLock = l;
+      l.addEventListener('release', () => { if (wakeLock === l) wakeLock = null; });
+    } else if (!on && wakeLock) {
+      const l = wakeLock; wakeLock = null; await l.release();
+    }
+  } catch (_) { /* desteklenmiyor ya da izin yok: sorun değil */ }
+}
+
+// Telefonda notalar ekrandan taşarsa oynatma çizgisini takip et
+function followPlayhead(beat) {
+  const w = $('#scoreWrap');
+  if (w.scrollWidth <= w.clientWidth + 1) return;
+  const x = xOf(Math.max(0, Math.min(state.total, beat)));
+  const target = Math.max(0, Math.round(x - w.clientWidth * 0.35));
+  if (Math.abs(w.scrollLeft - target) > 1) w.scrollLeft = target;
 }
 
 async function listen() {
@@ -554,6 +755,7 @@ async function sing() {
   renderStaff(-1);
   renderResultsHelp('Söylüyorsun… Bitince sonucun burada görünecek.');
   setPlaying(true);
+  if (isPhone()) $('#scoreCard').scrollIntoView({ block: 'start', behavior: 'smooth' });
 }
 
 function finishSing() {
@@ -609,14 +811,17 @@ function renderResults() {
 
   const box = $('#resultBox');
   box.innerHTML = '';
-  const big = document.createElement('div'); big.className = 'scoreBig'; big.textContent = `${total} / 100`;
+  const big = document.createElement('div'); big.className = 'scoreBig'; big.textContent = String(total);
+  const of = document.createElement('small'); of.textContent = '/ 100'; big.appendChild(of);
   box.appendChild(big);
-  tips.forEach(t => { const p = document.createElement('p'); p.style.margin = '4px 0'; p.textContent = t; box.appendChild(p); });
+  const tipBox = document.createElement('div'); tipBox.className = 'tips';
+  tips.forEach(t => { const p = document.createElement('p'); p.textContent = t; tipBox.appendChild(p); });
+  box.appendChild(tipBox);
   const chips = document.createElement('div'); chips.className = 'chips';
   notes.forEach(r => {
     const c = document.createElement('span'); c.className = 'chip ' + r.status;
     const b = document.createElement('b'); b.textContent = syllable(r.n.midi);
-    c.appendChild(b); c.append(' · ' + noteFeedback(r));
+    c.appendChild(b); c.append(noteFeedback(r));
     chips.appendChild(c);
   });
   box.appendChild(chips);
@@ -628,20 +833,29 @@ function renderResultsHelp(text) {
 
 // ---------- Ana döngü ----------
 let lastActive = -2;
-function loop() {
+// Ses yüksekliği en fazla ~66 kez/sn hesaplanır (120 Hz ekranlarda boşa iş yapmasın);
+// hesap yavaş bir telefonda uzun sürerse aralık otomatik açılır.
+let lastDetect = -1e9, detectGap = 15, detectCost = 0;
+const setText = (el, t) => { if (el.textContent !== t) el.textContent = t; };
+function loop(now) {
   requestAnimationFrame(loop);
-  let midi = null, freq = null, rms = 0;
-  if (analyser) {
+  now = now || performance.now();
+  let midi = null, fresh = false;
+  if (analyser && now - lastDetect >= detectGap) {
+    lastDetect = now; fresh = true;
+    const t0 = performance.now();
     analyser.getFloatTimeDomainData(buf);
     const r = detectPitch(buf, ctx.sampleRate);
-    rms = r.rms;
+    let freq = null;
     if (r.freq) {
       state.hist.push(freqToMidi(r.freq));
       if (state.hist.length > 3) state.hist.shift();
       midi = median(state.hist);
       freq = midiToFreq(midi);
     } else state.hist = [];
-    updateTuner(midi, freq, rms);
+    updateTuner(midi, freq, r.rms);
+    detectCost = detectCost * 0.9 + (performance.now() - t0) * 0.1;
+    detectGap = detectCost > 6 ? 30 : 15;
   }
   const s = state.session;
   if (!s) return;
@@ -649,18 +863,19 @@ function loop() {
   const beatNow = (ctx.currentTime - s.start) / s.beat;
   if (s.mode === 'sing') {
     const fb = (ctx.currentTime - lat - s.start) / s.beat;
-    if (fb >= -0.5 && fb <= state.total + 0.5) state.frames.push({ beat: fb, midi });
+    if (fresh && fb >= -0.5 && fb <= state.total + 0.5) state.frames.push({ beat: fb, midi });
     const st = $('#status');
-    if (ctx.currentTime < s.refEnd) { st.textContent = `Başlangıç sesi: ${s.firstName}`; st.className = ''; }
-    else if (beatNow < 0) { st.textContent = `Sayım: ${4 + Math.floor(beatNow) + 1}`; st.className = ''; }
+    if (ctx.currentTime < s.refEnd) { setText(st, `Başlangıç sesi: ${s.firstName}`); st.className = ''; }
+    else if (beatNow < 0) { setText(st, `Sayım: ${4 + Math.floor(beatNow) + 1}`); st.className = ''; }
     else if (beatNow < state.total) {
       const n = noteAt(beatNow);
-      st.textContent = n ? `Söyle: ${syllable(n.midi)}` : ''; st.className = 'go';
+      setText(st, n ? `Söyle: ${syllable(n.midi)}` : ''); st.className = 'go';
     }
   }
   const idx = state.notes.findIndex(n => beatNow >= n.start && beatNow < n.start + n.dur);
   if (idx !== lastActive) { renderStaff(idx); lastActive = idx; }
   drawRoll(beatNow);
+  followPlayhead(beatNow);
   if (beatNow >= state.total + 0.4) {
     const mode = s.mode;
     state.session = null; setPlaying(false); lastActive = -2;
@@ -673,13 +888,13 @@ function updateTuner(midi, freq, rms) {
   $('#level').style.width = Math.max(0, Math.min(100, (db + 60) / 50 * 100)) + '%';
   if (rms > 0.002) lastLoud = ctx.currentTime;
   if (midi == null) {
-    $('#tNote').textContent = '—'; $('#needle').style.left = '50%';
-    if (ctx.currentTime - lastLoud > 3) $('#tSub').textContent = 'Mikrofondan ses gelmiyor. Ayarlardan başka bir mikrofon seçmeyi dene.';
+    setText($('#tNote'), '—'); $('#needle').style.left = '50%';
+    if (ctx.currentTime - lastLoud > 3) setText($('#tSub'), 'Mikrofondan ses gelmiyor. Ayarlardan başka bir mikrofon seçmeyi dene.');
     else if (/ses gelmiyor/.test($('#tSub').textContent)) $('#tSub').textContent = 'Bir nota söyle…';
     return;
   }
   const near = Math.round(midi), cents = Math.round((midi - near) * 100);
-  $('#tNote').textContent = midiName(near);
+  setText($('#tNote'), midiName(near));
   const s = state.session;
   let extra = '';
   if (s && s.mode === 'sing') {
@@ -707,7 +922,11 @@ $('#exSelect').appendChild(randOpt);
 
 $('#exSelect').addEventListener('change', e => { if (e.target.value !== 'r') loadExercise(PRESETS[e.target.value].notes); });
 $('#randomBtn').addEventListener('click', () => { randOpt.hidden = false; $('#exSelect').value = 'r'; loadExercise(randomExercise()); });
-$('#tempo').addEventListener('input', e => { $('#tempoVal').textContent = e.target.value; });
+// Tempoya göre İtalyanca tempo terimi
+const tempoName = b => b < 60 ? 'Largo' : b < 66 ? 'Larghetto' : b < 76 ? 'Adagio' : b < 108 ? 'Andante' : b < 120 ? 'Moderato' : 'Allegro';
+function showTempo() { const v = Number($('#tempo').value); $('#tempoVal').textContent = v; $('#tempoName').textContent = tempoName(v); }
+$('#tempo').addEventListener('input', showTempo);
+showTempo();
 $('#fold').addEventListener('change', () => { if (state.results) finishSing(); else drawRoll(null); });
 $('#micBtn').addEventListener('click', enableMic);
 $('#micSelect').addEventListener('change', async e => {
@@ -725,11 +944,50 @@ if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
 $('#listenBtn').addEventListener('click', listen);
 $('#singBtn').addEventListener('click', sing);
 $('#stopBtn').addEventListener('click', () => { stopAll(); renderStaff(-1); drawRoll(null); lastActive = -2; });
-window.addEventListener('resize', () => layout());
-if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => layout());
 
+// Telefonda kaydırırken adres çubuğu açılıp kapanınca yalnızca yükseklik değişir: o zaman yeniden çizme
+let lastLayoutW = 0, resizeT = 0;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeT);
+  resizeT = setTimeout(() => {
+    const w = $('#scoreWrap').clientWidth;
+    if (w === lastLayoutW) return;
+    lastLayoutW = w; layout();
+  }, 100);
+});
+if (window.matchMedia) {
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const onTheme = () => { cssCache.clear(); layout(); };
+  if (mq.addEventListener) mq.addEventListener('change', onTheme); else if (mq.addListener) mq.addListener(onTheme);
+}
+
+// Uygulama arka plana alınınca (telefon kilidi, başka uygulama) kaydı durdur ve mikrofonu bırak
+let micWasOn = false;
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    const mode = state.session && state.session.mode;
+    if (mode) {
+      stopAll(); renderStaff(-1); drawRoll(null); lastActive = -2;
+      if (mode === 'sing') renderResultsHelp("Uygulamadan çıktığın için kayıt durduruldu. Tekrar denemek için Söyle'ye bas.");
+    }
+    micWasOn = !!analyser;
+    if (micWasOn) releaseMic();
+  } else if (micWasOn && ctx) {
+    micWasOn = false;
+    const reopen = () => enableMic().catch(() => {});
+    if (ctx.state === 'running') reopen();
+    else ctx.resume().then(reopen, () => {});
+  }
+});
+
+lastLayoutW = $('#scoreWrap').clientWidth;
 loadExercise(PRESETS[0].notes);
 requestAnimationFrame(loop);
+
+// Çevrimdışı çalışma ve "Ana ekrana ekle" (yalnızca yayındaki https sürümde)
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
 </script>
 </body>
 </html>

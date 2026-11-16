@@ -13,9 +13,11 @@ Konservatuvara hazırlanan öğrenciler için tarayıcıda çalışan bir solfej
 - Nota başına geri bildirim: "tam isabet", "20 sent tiz", "≈ Sol söyledin", "1 oktav pes"
 - İnce ses / kalın ses seçeneği ve oktav farkını yok sayma
 - Mikrofon seçimi, anlık akort göstergesi ve ses seviyesi çubuğu
-- Açık ve koyu tema, telefon uyumlu
+- Açık ve koyu tema
+- Telefona uygun: oynatma tuşları ekranın altında, nota satırı söylerken kendiliğinden kayar, söylerken ekran kararmaz
+- Ana ekrana eklenebilir (PWA) ve bir kez açıldıktan sonra internetsiz de çalışır
 
-Tek bir HTML dosyasıdır; sunucu, kurulum ya da dış kütüphane gerektirmez. Ses yüksekliği tarayıcıda YIN algoritmasıyla hesaplanır, ses hiçbir yere gönderilmez.
+Tek bir HTML dosyasıdır; sunucu, kurulum ya da dış kütüphane gerektirmez (yanındaki `manifest.webmanifest`, `sw.js` ve ikonlar yalnızca ana ekrana ekleme ve çevrimdışı çalışma içindir). Ses yüksekliği tarayıcıda YIN algoritmasıyla hesaplanır, ses hiçbir yere gönderilmez.
 
 ## Kullanım
 
@@ -24,3 +26,5 @@ Tek bir HTML dosyasıdır; sunucu, kurulum ya da dış kütüphane gerektirmez. 
 3. **Dinle** ile ezgiyi duy, **Söyle** ile söyle.
 
 Kulaklık takarsan metronom sesi mikrofona karışmaz.
+
+Telefonda tarayıcı menüsünden **Ana ekrana ekle**yi seçersen uygulama gibi tam ekran açılır. Uygulamadan çıkınca kayıt durur ve mikrofon kapanır; geri dönünce mikrofon yeniden açılır.
