@@ -51,7 +51,7 @@
   }
   ::selection { background: var(--accent); color: var(--accent-ink); }
   .page {
-    max-width: 1080px; margin: 0 auto;
+    max-width: 1280px; margin: 0 auto;
     padding: calc(28px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right))
              calc(56px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));
   }
@@ -73,7 +73,7 @@
   }
 
   /* Ayarlar */
-  .controls { display: grid; grid-template-columns: 1.7fr 1.2fr 1fr 1fr; border-bottom: 1px solid var(--line); }
+  .controls { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, .85fr) minmax(0, 1fr) minmax(0, 1fr); border-bottom: 1px solid var(--line); }
   .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 14px 18px 16px; border-left: 1px solid var(--line); }
   .field:first-child { border-left: 0; padding-left: 0; }
   .field.opts { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 22px; border-left: 0; border-top: 1px solid var(--line); padding: 10px 0; }
@@ -112,7 +112,25 @@
   button.quiet { border-color: var(--line); padding: 6px 12px; font-size: 14px; }
 
   /* Nota + grafik */
-  #scoreCard { margin-top: 26px; }
+  /* Çalışma alanı: solda ayarlar + nota, sağda (geniş ekranda) sabit duran akort ve sonuç */
+  .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 0 32px; align-items: start; }
+  .main { min-width: 0; container-type: inline-size; }
+  .side {
+    position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; overscroll-behavior: contain;
+    border-left: 1px solid var(--line); padding-left: 28px; scrollbar-width: thin;
+  }
+  .side > section { padding: 16px 0 20px; min-width: 0; }
+  .side > section + section { border-top: 1px solid var(--line); }
+  .side .tunerNote, .side .scoreBig { font-size: 60px; }
+  .side .chips { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); column-gap: 16px; }
+  .side .chip { font-size: 13px; }
+  #scoreCard { margin-top: 22px; }
+  .mini { display: none; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; }
+  .mini b { font-family: var(--serif); font-weight: 600; font-size: 20px; }
+  .mini span { font-size: 13px; color: var(--muted); }
+  .mini::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--line); align-self: center; }
+  .mini.good::before { background: var(--good); } .mini.close::before { background: var(--warn); } .mini.bad::before { background: var(--bad); }
+  .brk { display: none; }
   .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
   #status { margin-left: auto; font-family: var(--serif); font-style: italic; font-size: 22px; line-height: 1.2; min-height: 27px; }
   #status.go { color: var(--accent); }
@@ -124,9 +142,7 @@
   #roll { display: block; border-top: 1px solid var(--line); }
 
   /* Akort + sonuç */
-  .grid2 { display: grid; grid-template-columns: 1fr 1.5fr; border-bottom: 1px solid var(--line); }
-  .grid2 > section { padding: 20px 0 24px; min-width: 0; }
-  .grid2 > section + section { padding-left: 28px; margin-left: 28px; border-left: 1px solid var(--line); }
+
   h2 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 17px; margin: 0 0 8px; color: var(--muted); }
   .tunerNote { font-family: var(--serif); font-weight: 500; font-size: 68px; line-height: 1; letter-spacing: -.02em; font-variation-settings: "opsz" 144; }
   .tunerSub { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; min-height: 22px; margin-top: 6px; }
@@ -166,16 +182,28 @@
     .check input { width: 20px; height: 20px; }
     input[type=range] { height: 32px; }
   }
-  @media (max-width: 860px) {
+  @container (max-width: 760px) {
     .controls { grid-template-columns: 1fr 1fr; }
     .field { padding: 12px 0 14px; border-left: 0; border-top: 1px solid var(--line); }
     .field:nth-child(-n+2) { border-top: 0; }
     .field:nth-child(2n) { padding-left: 18px; border-left: 1px solid var(--line); }
     .field.opts { padding-left: 0; border-left: 0; }
   }
+  /* Dar ekran: akort ve sonuç notaların altına iner; canlı akort tuş çubuğunda küçük olarak görünür */
+  @media (max-width: 899px) {
+    .workspace { display: block; }
+    .side {
+      position: static; max-height: none; overflow: visible; padding-left: 0; border-left: 0;
+      display: grid; grid-template-columns: 1fr 1.5fr; border-bottom: 1px solid var(--line);
+    }
+    .side > section + section { border-top: 0; padding-left: 28px; margin-left: 28px; border-left: 1px solid var(--line); }
+    .side .chips { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    .mini { display: inline-flex; }
+    #resultSec { scroll-margin-top: 12px; }
+  }
   @media (max-width: 760px) {
-    .grid2 { grid-template-columns: 1fr; }
-    .grid2 > section + section { padding-left: 0; margin-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+    .side { grid-template-columns: 1fr; }
+    .side > section + section { padding-left: 0; margin-left: 0; border-left: 0; border-top: 1px solid var(--line); }
   }
   /* Telefon */
   @media (max-width: 640px) {
@@ -198,8 +226,11 @@
     .actions button { flex: 1 1 0; min-width: 0; padding: 8px 6px; white-space: nowrap; }
     #micBtn.is-on { display: none; }
     .lg { display: none; }
-    #status { order: -1; flex: 1 0 100%; margin: 0 0 2px; text-align: center; font-size: 19px; min-height: 24px; }
-    .tunerNote, .scoreBig { font-size: 56px; }
+    #status { order: -1; flex: 1 1 auto; margin: 0 0 2px; text-align: left; font-size: 19px; min-height: 24px; }
+    .mini { order: -1; }
+    .brk { display: block; order: -1; flex-basis: 100%; height: 0; }
+    #resultSec { scroll-margin-bottom: calc(130px + env(safe-area-inset-bottom)); }
+    .side .tunerNote, .side .scoreBig { font-size: 56px; }
   }
   @media (max-width: 380px) {
     .actions button svg { display: none; }
@@ -230,6 +261,8 @@
   </header>
   <div class="staffRule" aria-hidden="true"></div>
 
+  <div class="workspace">
+  <div class="main">
   <section class="controls" aria-label="Ayarlar">
     <label class="field wide"><span>Alıştırma</span>
       <div class="row">
@@ -262,6 +295,8 @@
       <button id="singBtn" type="button" class="primary"><svg><use href="#i-rec"/></svg>Söyle</button>
       <button id="stopBtn" type="button" disabled><svg><use href="#i-stop"/></svg>Durdur</button>
       <div id="status" aria-live="polite"></div>
+      <div class="mini" id="mini" aria-hidden="true"><b id="miniNote">—</b><span id="miniCents"></span></div>
+      <div class="brk"></div>
     </div>
     <div class="scoreWrap" id="scoreWrap">
       <div id="scoreInner">
@@ -270,8 +305,9 @@
       </div>
     </div>
   </section>
+  </div>
 
-  <div class="grid2">
+  <aside class="side">
     <section aria-label="Akort göstergesi">
       <h2>Şu an söylediğin</h2>
       <div class="tunerNote" id="tNote">—</div>
@@ -286,7 +322,7 @@
       <div class="meterLabels"><span>pes</span><span>tam</span><span>tiz</span></div>
       <div class="level"><div id="level"></div></div>
     </section>
-    <section aria-label="Sonuç">
+    <section id="resultSec" aria-label="Sonuç">
       <h2>Sonuç</h2>
       <div id="resultBox">
         <ol class="help">
@@ -297,6 +333,7 @@
         </ol>
       </div>
     </section>
+  </aside>
   </div>
 </div>
 
@@ -457,6 +494,12 @@ function releaseMic() {
   b.innerHTML = '<svg><use href="#i-mic"/></svg><span>Mikrofon<span class="lg">u aç</span></span>'; b.disabled = false; b.classList.remove('is-on');
   $('#micSelect').disabled = true;
   $('#tNote').textContent = '—'; $('#needle').style.left = '50%'; $('#level').style.width = '0';
+  setMini('—', '', '');
+}
+// Tuş çubuğundaki küçük canlı gösterge (dar ekranlar)
+function setMini(note, sub, cls) {
+  setText($('#miniNote'), note); setText($('#miniCents'), sub);
+  const c = 'mini' + (cls ? ' ' + cls : ''); if ($('#mini').className !== c) $('#mini').className = c;
 }
 
 async function refreshMicList(activeId, activeLabel) {
@@ -560,7 +603,7 @@ function noteAt(beat) { return state.notes.find(n => beat >= n.start && beat < n
 
 function layout() {
   const avail = $('#scoreWrap').clientWidth;
-  ROLL_H = isPhone() ? 190 : 230;
+  ROLL_H = isPhone() ? 190 : Math.round(Math.max(170, Math.min(230, window.innerHeight - 430)));
   state.W = Math.max(avail, L + R + state.total * 34);
   $('#scoreInner').style.width = state.W + 'px';
   const c = $('#roll'), dpr = canvasDpr();
@@ -755,7 +798,10 @@ async function sing() {
   renderStaff(-1);
   renderResultsHelp('Söylüyorsun… Bitince sonucun burada görünecek.');
   setPlaying(true);
-  if (isPhone()) $('#scoreCard').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  // Notalar ekranda tam görünmüyorsa görünür yap (yan sütun geniş ekranda zaten sabit)
+  const r = $('#scoreCard').getBoundingClientRect();
+  const barH = isPhone() ? $('.actions').offsetHeight : 0;
+  if (isPhone() || r.top < 0 || r.bottom > window.innerHeight - barH) $('#scoreCard').scrollIntoView({ block: 'start', behavior: 'smooth' });
 }
 
 function finishSing() {
@@ -780,6 +826,8 @@ function finishSing() {
   const total = Math.round(100 * notes.reduce((s, r) => s + r.score, 0) / notes.length);
   state.results = { notes, total };
   renderResults();
+  // Dar ekranda sonuç notaların altında kalır: oraya kaydır
+  if (window.matchMedia('(max-width: 899px)').matches) $('#resultSec').scrollIntoView({ block: isPhone() ? 'end' : 'start', behavior: 'smooth' });
   renderStaff(-1);
   drawRoll(null);
 }
@@ -888,7 +936,7 @@ function updateTuner(midi, freq, rms) {
   $('#level').style.width = Math.max(0, Math.min(100, (db + 60) / 50 * 100)) + '%';
   if (rms > 0.002) lastLoud = ctx.currentTime;
   if (midi == null) {
-    setText($('#tNote'), '—'); $('#needle').style.left = '50%';
+    setText($('#tNote'), '—'); $('#needle').style.left = '50%'; setMini('—', '', '');
     if (ctx.currentTime - lastLoud > 3) setText($('#tSub'), 'Mikrofondan ses gelmiyor. Ayarlardan başka bir mikrofon seçmeyi dene.');
     else if (/ses gelmiyor/.test($('#tSub').textContent)) $('#tSub').textContent = 'Bir nota söyle…';
     return;
@@ -896,11 +944,20 @@ function updateTuner(midi, freq, rms) {
   const near = Math.round(midi), cents = Math.round((midi - near) * 100);
   setText($('#tNote'), midiName(near));
   const s = state.session;
-  let extra = '';
+  let extra = '', miniSub = `${cents > 0 ? '+' : ''}${cents}¢`, miniCls = '';
   if (s && s.mode === 'sing') {
     const n = noteAt((ctx.currentTime - s.start) / s.beat);
-    if (n) extra = ` · hedef ${midiName(n.midi + opts().voiceShift)}`;
+    if (n) {
+      const o = opts();
+      extra = ` · hedef ${midiName(n.midi + o.voiceShift)}`;
+      let disp = midi - o.voiceShift;
+      if (o.fold) disp = foldNear(disp, n.midi);
+      const dev = Math.round((disp - n.midi) * 100), ad = Math.abs(dev);
+      miniCls = ad <= 30 ? 'good' : ad <= 60 ? 'close' : 'bad';
+      miniSub = ad <= 20 ? 'tam' : ad > 70 ? `hedef ${syllable(n.midi)}` : `${dev > 0 ? '+' : ''}${dev}¢`;
+    }
   }
+  setMini(midiName(near), miniSub, miniCls);
   $('#tSub').textContent = `${cents > 0 ? '+' : ''}${cents} sent · ${freq.toFixed(1)} Hz${extra}`;
   $('#needle').style.left = (50 + Math.max(-50, Math.min(50, cents))) + '%';
 }
